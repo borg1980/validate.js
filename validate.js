@@ -166,7 +166,11 @@ $(document).ready(function(){
 			var t = node.attr('data-validate-error-text');
 			if (!t) t = 'Value is invalid.';
 
-			if (noty) noty({type: 'error', text: t, closeButton: true, timeout: 3000});
+			try {
+				if (noty) noty({type: 'error', text: t, closeButton: true, timeout: 3000});
+			}
+			catch(e){}
+
 			return true;
 		})
 		/* CUSTOM: Validate value */
