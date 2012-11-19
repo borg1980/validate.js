@@ -155,7 +155,7 @@ $(document).ready(function(){
 			$(this).removeClass('invalid').addClass('valid');
 			return true;
 		})
-		.on('invalid.validate', 'select, input, textarea', function(){
+		.on('invalid.validate', 'select, input, textarea', function(event, index, operator){
 			var node = $(this);
 
 			// Prevent double notifications.
