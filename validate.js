@@ -202,7 +202,8 @@ $(document).ready(function(){
 				}
 
 				if (!validateStatus) {
-					node.trigger('invalid');
+					ops.unshift(i);
+					node.trigger('invalid', ops);
 					return true;
 				}
 			}
