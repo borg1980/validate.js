@@ -69,8 +69,11 @@ $(document).ready(function(){
 	$(document)
 		/* CUSTOM: "Operators" */
 		.on('required.validate', 'select, input, textarea', function(event, dummy, target){
-			var m = $.trim($(this).val());
-			if (m.length < 1) {
+			var field = $(this),
+				type = field.attr('type'),
+				m = $.trim(field.val());
+
+			if (m.length < 1 || ((type == 'checkbox' || type == 'radio') && !field.is(':checked')) {
 				validateStatus = false;
 			}
 		})
