@@ -73,7 +73,7 @@ $(document).ready(function(){
 				type = field.attr('type'),
 				m = $.trim(field.val());
 
-			if (m.length < 1 || ((type == 'checkbox' || type == 'radio') && !field.is(':checked')) {
+			if (m.length < 1 || ((type == 'checkbox' || type == 'radio') && !field.is(':checked'))) {
 				validateStatus = false;
 			}
 		})
