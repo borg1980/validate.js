@@ -13,7 +13,7 @@
 	- "date": checks if value is in YYYY-MM-DD format
 	- "number" or "number:integer": checks if value is number (floating point or integer) or number that is integer (not floating point)
 	- "regexp::^regular-expression$" or "regexp:i:^regular-expression$": tests value against specified regular expression.
-	     First parameter is a modifiers string passed to RegExp object. Second parameter is an regular expression (of course ;).
+		First parameter is a modifiers string passed to RegExp object. Second parameter is an regular expression (of course ;).
 	- "eq:1" or "eq:#some-other-field-id": checks if value is equal to specified value, or value of another field
 	- "lt:1" or "lt:#some-other-field-id": checks if value is less than specified value, or value of another field
 	- "lte:1" or "lte:#some-other-field-id": checks if value is less than or equal to specified value, or value of another field
@@ -71,9 +71,9 @@ $(document).ready(function(){
 		.on('required.validate', 'select, input, textarea', function(event, dummy, target){
 			var field = $(this),
 				type = field.attr('type'),
-				m = $.trim(field.val());
+				m = $.trim(type != 'radio' ? field.val() : $('input:radio[name="'+field.attr('name')+'"]:checked').val());
 
-			if (m.length < 1 || ((type == 'checkbox' || type == 'radio') && !field.is(':checked'))) {
+			if (m.length < 1 || (type == 'checkbox' && !field.is(':checked'))) {
 				validateStatus = false;
 			}
 		})
@@ -98,7 +98,7 @@ $(document).ready(function(){
 			validateStatus = true;
 
 			if (m) {
-			    m = (type == 'integer' ? m.match(/^[-+]?\d+$/) : m.match(/^[-+]?\d+([.,]\d+)?$/));
+				m = (type == 'integer' ? m.match(/^[\-+]?\d+$/) : m.match(/^[\-+]?\d+([.,]\d+)?$/));
 
 				if (!m) {
 					validateStatus = false;
@@ -121,7 +121,7 @@ $(document).ready(function(){
 		})
 		.on('compare.validate', 'select, input, textarea', function(event, operator, target){
 			var t = (target[0] == '#' ? $.trim($(target).val()) : target),
-			    v = $.trim($(this).val()),
+				v = $.trim($(this).val()),
 				tn = t*1,
 				vn = v*1;
 
@@ -181,7 +181,7 @@ $(document).ready(function(){
 			validateStatus = true;
 
 			var node = $(this),
-			    validate = (state ? node.attr('data-validate-'+state) : node.attr('data-validate'));
+				validate = (state ? node.attr('data-validate-'+state) : node.attr('data-validate'));
 			if (!validate) validate = node.attr('data-validate');
 			if (!validate) return true;
 
@@ -233,7 +233,7 @@ $(document).ready(function(){
 		var changed = $('form.changed[data-validate="submitted"]');
 		if (changed.length > 0) {
 			var txt = '',
-			    dtxt = '';
+				dtxt = '';
 			changed.each(function(){
 				var t = $(this).attr('data-validate-error-text');
 				if (t) txt += t + "\n";
