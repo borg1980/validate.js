@@ -170,7 +170,7 @@ $(document).ready(function(){
 			if (!t) t = 'Value is invalid.';
 
 			try {
-				if (noty) noty({type: 'error', text: t, closeButton: true, timeout: 3000});
+				if (noty) noty({type: 'error', text: t, closeWith: ['click', 'button'], timeout: 3000});
 			}
 			catch(e){}
 
