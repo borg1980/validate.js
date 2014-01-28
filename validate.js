@@ -13,12 +13,31 @@
 	- "date": checks if value is in YYYY-MM-DD format
 	- "number" or "number:integer": checks if value is number (floating point or integer) or number that is integer (not floating point)
 	- "regexp::^regular-expression$" or "regexp:i:^regular-expression$": tests value against specified regular expression.
-		First parameter is a modifiers string passed to RegExp object. Second parameter is an regular expression (of course ;).
+		First parameter is a modifier string passed to RegExp object. Second parameter is an regular expression (of course ;).
 	- "eq:1" or "eq:#some-other-field-id": checks if value is equal to specified value, or value of another field
+	- "neq:1" or "neq:#some-other-field-id": checks if value is different than specified value, or value of another field
 	- "lt:1" or "lt:#some-other-field-id": checks if value is less than specified value, or value of another field
 	- "lte:1" or "lte:#some-other-field-id": checks if value is less than or equal to specified value, or value of another field
 	- "gt:1" or "gt:#some-other-field-id": checks if value is greater than specified value, or value of another field
 	- "gte:1" or "gte:#some-other-field-id": checks if value is greater than or equal to specified value, or value of another field
+
+	You can pass additional information after another colon (':'). All of the information will be passed with the `invalid` events
+	triggered after validation. For example, with `data-validate` set to: "required::my-error-message-id" we will get:
+
+	```
+	var onInvalid = function (event, index, operator, o1, o2, o3) {
+		// index is the index of validation rule, here it will be "0"
+		// operator is the first part of the rule, here it will be "required"
+		// o1 is the second part of the rule, here it will be empty, because we're not targetting different field
+		// o2 is the third part of the rule, here it will be "my-error-message-id"
+
+		// Now we can alert user to let him/her know, what is wrong with the value.
+		if (operator === 'required') {
+			alert(myMessages[o2]);
+		}
+	};
+	$('select, input, textarea').on('invalid', onInvalid);
+	```
 
 	You can select more than one validation operator, e.g., "date required".
 	You can use "data-validate-change" and/or "data-validate-submit" to specify different validation for different events (onchange and onsubmit).
@@ -69,7 +88,7 @@ $(document).ready(function(){
 	$(document)
 		/* CUSTOM: "Operators" */
 		.on('required.validate', 'select, input, textarea', function(event, dummy, target){
-			var field = $(this),
+			var field = (target ? $(target) : $(this)),
 				type = field.attr('type'),
 				m = $.trim(type != 'radio' ? field.val() : $('input:radio[name="'+field.attr('name')+'"]:checked').val());
 
@@ -135,6 +154,9 @@ $(document).ready(function(){
 			switch (operator) {
 				case 'eq':
 					validateStatus = (v == t);
+					break;
+				case 'neq':
+					validateStatus = (v != t);
 					break;
 				case 'lt':
 					validateStatus = (v < t);
