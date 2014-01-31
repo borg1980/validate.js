@@ -9,7 +9,7 @@
 	To apply validation to a field, add "data-validate" attribute, with space separated list
 	of "validation" functions:
 
-	- "required" or "required:#some-other-field": checks if value of field (or target field) is not empty
+	- "required" or "required:#some-other-field": checks if value of field (or target field) is not empty and is not the same as a placeholder text
 	- "date": checks if value is in YYYY-MM-DD format
 	- "number" or "number:integer": checks if value is number (floating point or integer) or number that is integer (not floating point)
 	- "regexp::^regular-expression$" or "regexp:i:^regular-expression$": tests value against specified regular expression.
@@ -90,9 +90,10 @@ $(document).ready(function(){
 		.on('required.validate', 'select, input, textarea', function(event, dummy, target){
 			var field = (target ? $(target) : $(this)),
 				type = field.attr('type'),
-				m = $.trim(type != 'radio' ? field.val() : $('input:radio[name="'+field.attr('name')+'"]:checked').val());
+				m = $.trim(type != 'radio' ? field.val() : $('input:radio[name="'+field.attr('name')+'"]:checked').val()),
+				placeholder = $.trim(field.attr('placeholder'));
 
-			if (m.length < 1 || (type == 'checkbox' && !field.is(':checked'))) {
+			if (m.length < 1 || (type == 'checkbox' && !field.is(':checked')) || (placeholder && m === placeholder)) {
 				validateStatus = false;
 			}
 		})
