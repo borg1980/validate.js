@@ -21,6 +21,8 @@
 	- "gt:1" or "gt:#some-other-field-id": checks if value is greater than specified value, or value of another field
 	- "gte:1" or "gte:#some-other-field-id": checks if value is greater than or equal to specified value, or value of another field
 
+	In case of *eq, lt* and gt*, if checked value is a string and it's compared to a number, then it's length is compared, not text.
+
 	You can pass additional information after another colon (':'). All of the information will be passed with the `invalid` events
 	triggered after validation. For example, with `data-validate` set to: "required::my-error-message-id" we will get:
 
@@ -150,6 +152,10 @@ $(document).ready(function(){
 			if (!isNaN(tn) && !isNaN(vn)) {
 				t = tn;
 				v = vn;
+			}
+
+			if (isNaN(vn) && !isNaN(tn)) {
+				v = v.length;
 			}
 
 			switch (operator) {
