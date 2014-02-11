@@ -1,0 +1,120 @@
+<html>
+	<head>
+		<title>Test validation rules</title>
+		<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script type="text/javascript" src="../validate.js"></script>
+		<script type="text/javascript">
+
+$(document).ready(function(){
+	$(document)
+		.on('invalid', 'input, select, textarea', function(){
+			$(this).parent().removeClass('valid').addClass('invalid');
+		})
+		.on('valid', 'input, select, textarea', function(){
+			$(this).parent().removeClass('invalid').addClass('valid');
+		})
+		.on('itMustBeMeaningOfLife', 'input, select, textarea', function(event, state, ops){
+			var v = $(this).val();
+
+			state.valid = (v == '42');
+		})
+	;
+
+	$('#test').on('submit', function(e){
+		$('input, select, textarea', $(this)).trigger('validate', ['submit']);
+		e.preventDefault();
+	});
+});
+
+		</script>
+		<style type="text/css">
+			.valid {
+				background: #0f0;
+				background: rgba(100, 200, 100, 0.3);
+			}
+			.invalid {
+				background: #f00;
+				background: rgba(200, 100, 100, 0.3);
+			}
+			label,
+			input,
+			select,
+			textarea {
+				display: block;
+			}
+		</style>
+	</head>
+	<body>
+		<form id="test">
+
+		<div>
+			<label for="test-required-text">Required value:</label>
+			<input name="test-required-text" id="test-required-text" placeholder="text" data-validate="required"/>
+		</div>
+
+		<div>
+			<label for="test-required-checkbox">Required checkbox:</label>
+			<input type="checkbox" name="test-required-checkbox" id="test-required-checkbox" data-validate="required"/>
+		</div>
+
+		<div>
+			<label for="test-required-radio">Required radio:</label>
+			None: <input type="radio" name="test-required-radio" id="test-required-radio" value="" data-validate="required"/>
+			Something: <input type="radio" name="test-required-radio" id="test-required-radio" value="something" data-validate="required"/>
+		</div>
+
+		<div>
+			<label for="test-date-text">Date value:</label>
+			<input name="test-date-text" id="test-date-text" placeholder="2014-02-11" data-validate="date"/>
+		</div>
+
+		<div>
+			<label for="test-number-text">Number value:</label>
+			<input name="test-number-text" id="test-number-text" placeholder="1.23" data-validate="number"/>
+		</div>
+
+		<div>
+			<label for="test-integer-text">Integer value:</label>
+			<input name="test-integer-text" id="test-integer-text" placeholder="123" data-validate="number:integer"/>
+		</div>
+
+		<div>
+			<label for="test-regexp-text">Regexp (a-\d-\d-\d) value:</label>
+			<input name="test-regexp-text" id="test-regexp-text" placeholder="a-1-2-3" data-validate="regexp:i:^a-\d-\d-\d$"/>
+		</div>
+
+		<div>
+			<label for="test-eq-regexp-text">Equals value of the regexp field above:</label>
+			<input name="test-eq-regexp-text" id="test-eq-regexp-text" placeholder="a-1-2-3" data-validate="eq:#test-regexp-text"/>
+		</div>
+
+		<div>
+			<label for="test-eq-test">Equals "test":</label>
+			<input name="test-eq-test" id="test-eq-test" placeholder="test" data-validate="eq:test"/>
+		</div>
+
+		<div>
+			<label for="test-eq-123">Equals 123:</label>
+			<input name="test-eq-123" id="test-eq-123" placeholder="123" data-validate="eq:123"/>
+		</div>
+
+		<div>
+			<label for="test-eq-length">Length of text equals 4:</label>
+			<input name="test-eq-length" id="test-eq-length" placeholder="abcd" data-validate="eq:4"/>
+		</div>
+
+		<div>
+			<label for="test-neq-length">Length of text differs 4:</label>
+			<input name="test-neq-length" id="test-neq-length" placeholder="abcd" data-validate="neq:4"/>
+		</div>
+
+		<div>
+			<label for="test-eq-custom">What is the meaning of life?</label>
+			<input name="test-eq-custom" id="test-eq-custom" placeholder="42" data-validate="itMustBeMeaningOfLife"/>
+		</div>
+
+		<input type="submit" value="Test"/>
+
+		</form>
+	</body>
+</html>
