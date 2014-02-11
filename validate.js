@@ -7,7 +7,7 @@
 	It will use jquery.noty.js if available (http://needim.github.com/noty/).
 
 	To apply validation to a field, add "data-validate" attribute, with space separated list
-	of "validation" functions:
+	of "validation" functions/rules:
 
 	- "required" or "required:#some-other-field": checks if value of field (or target field) is not empty and is not the same as a placeholder text
 	- "date": checks if value is in YYYY-MM-DD format
@@ -42,7 +42,7 @@
 	```
 
 	You can select more than one validation operator, e.g., "date required".
-	You can use "data-validate-change" and/or "data-validate-submit" to specify different validation for different events (onchange and onsubmit).
+	You can use "data-validate-change" and/or "data-validate-submit" to specify different validation rules for different events (onchange and onsubmit).
 
 	Use "data-validate-error-text" attribute to specify error message, which will be shown after invalid value is found.
 
@@ -57,8 +57,8 @@
 
 	## LICENCE
 
-	Copyright 2012 Marcin Konicki.
-	Copyright 2012 Paweł Lewicki.
+	Copyright 2012-2014 Marcin Konicki.
+	Copyright 2012-2014 Paweł Lewicki.
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -80,7 +80,7 @@
 */
 
 if ($ === undefined) {
-	if (console) console.log('validate.js depends jQuery (http://jquery.com/).');
+	if (console) console.log('validate.js depends on jQuery (http://jquery.com/).');
 	return;
 }
 
@@ -188,6 +188,9 @@ $(document).ready(function(){
 			return true;
 		})
 		.on('invalid.validate', 'select, input, textarea', function(event, index, operator){
+			// Set global status to false, so if we're triggered by custom rule, validate.validate will stop validation process on this field.
+			validateStatus = false;
+
 			var node = $(this);
 
 			// Prevent double notifications.
@@ -222,14 +225,16 @@ $(document).ready(function(){
 				if (!ops || ops.length < 1) continue;
 
 				switch (ops[0]) {
-					case 'required':
-					case 'date':
-					case 'number':
-					case 'regexp':
-						node.trigger(ops[0], ops);
+					case 'eq':
+					case 'neq':
+					case 'lt':
+					case 'lte':
+					case 'gt':
+					case 'gte':
+						node.trigger('compare', ops);
 						break;
 					default:
-						node.trigger('compare', ops);
+						node.trigger(ops[0], ops);
 						break;
 				}
 
