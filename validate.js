@@ -23,6 +23,32 @@
 
 	In case of *eq, lt* and gt*, if checked value is a string and it's compared to a number, then it's length is compared, not text.
 
+
+
+	You can implement custom validation rules simply by attaching custom event handlers to the fields, e.g.,
+
+	```
+	$(document).on('customValidation1.myValidations', function(event, state, ops){
+		state.valid = $(this).val() == 'whatever';
+	})
+	```
+
+	Valiation handler gets two arguments: state object and ops array. State object looks like this:
+
+	```
+	state = {
+		mode: 'submit', // can be either 'change' or 'submit' depending on what triggered the validation
+		valid: true, // validation status, defaults to true. Set to false to mark the field invalid
+	};
+	```
+
+	Ops array is the validation rule split by colons, e.g., if rule was "customValidation1:one:two:three", then ops is:
+
+	```
+	ops = ['customValidation1', 'one', 'two', 'three'];
+	```
+
+
 	You can pass additional information after another colon (':'). All of the information will be passed with the `invalid` events
 	triggered after validation. For example, with `data-validate` set to: "required::my-error-message-id" we will get:
 
@@ -45,6 +71,7 @@
 	You can use "data-validate-change" and/or "data-validate-submit" to specify different validation rules for different events (onchange and onsubmit).
 
 	Use "data-validate-error-text" attribute to specify error message, which will be shown after invalid value is found.
+
 
 
 	There can be an additional validation check added to FORM element:
@@ -84,199 +111,202 @@ if ($ === undefined) {
 	return;
 }
 
-$(document).ready(function(){
-	var validateStatus = true;
+$(document)
+	/* CUSTOM: "Operators" */
+	.on('required.validate', 'select, input, textarea', function(event, state, ops){
+		var target = ops[1];
+		var field = (target ? $(target) : $(this)),
+			type = field.attr('type'),
+			m = $.trim(type != 'radio' ? field.val() : $('input:radio[name="'+field.attr('name')+'"]:checked').val()),
+			placeholder = $.trim(field.attr('placeholder'));
 
-	$(document)
-		/* CUSTOM: "Operators" */
-		.on('required.validate', 'select, input, textarea', function(event, dummy, target){
-			var field = (target ? $(target) : $(this)),
-				type = field.attr('type'),
-				m = $.trim(type != 'radio' ? field.val() : $('input:radio[name="'+field.attr('name')+'"]:checked').val()),
-				placeholder = $.trim(field.attr('placeholder'));
+		if (m.length < 1 || (type == 'checkbox' && !field.is(':checked')) || (placeholder && m === placeholder)) {
+			state.valid = false;
+		}
+	})
+	.on('date.validate', 'select, input, textarea', function(event, state, ops){
+		var m = $.trim($(this).val());
 
-			if (m.length < 1 || (type == 'checkbox' && !field.is(':checked')) || (placeholder && m === placeholder)) {
-				validateStatus = false;
-			}
-		})
-		.on('date.validate', 'select, input, textarea', function(){
-			var m = $.trim($(this).val());
+		state.valid = true;
 
-			validateStatus = true;
-
+		if (m) {
+			m = m.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 			if (m) {
-				m = m.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-				if (m) {
-					var d = new Date(m[1], (m[2]*1)-1, m[3]);
-					validateStatus = ((d.getMonth()+1 == m[2]*1) && (d.getDate() == m[3]*1) && (d.getFullYear() == m[1]*1));
-					return;
-				}
-				validateStatus = false;
+				var d = new Date(m[1], (m[2]*1)-1, m[3]);
+				state.valid = ((d.getMonth()+1 == m[2]*1) && (d.getDate() == m[3]*1) && (d.getFullYear() == m[1]*1));
+				return;
 			}
-		})
-		.on('number.validate', 'select, input, textarea', function(event, dummy, type){
-			var m = $.trim($(this).val());
+			state.valid = false;
+		}
+	})
+	.on('number.validate', 'select, input, textarea', function(event, state, ops){
+		var m = $.trim($(this).val());
 
-			validateStatus = true;
+		state.valid = true;
 
-			if (m) {
-				m = (type == 'integer' ? m.match(/^[\-+]?\d+$/) : m.match(/^[\-+]?\d+([.,]\d+)?$/));
+		if (m) {
+			m = (ops[1] == 'integer' ? m.match(/^[\-+]?\d+$/) : m.match(/^[\-+]?\d+([.,]\d+)?$/));
 
-				if (!m) {
-					validateStatus = false;
-				}
+			if (!m) {
+				state.valid = false;
 			}
-		})
-		.on('regexp.validate', 'select, input, textarea', function(event, dummy, modifiers, rex){
-			var m = $.trim($(this).val());
+		}
+	})
+	.on('regexp.validate', 'select, input, textarea', function(event, state, ops){
+		var modifiers = ops[1];
+		var rex = ops[2];
+		var m = $.trim($(this).val());
 
-			validateStatus = true;
+		state.valid = true;
 
-			if (m && rex) {
-				var r = new RegExp(rex, modifiers);
-				m = r.test(m);
+		if (m && rex) {
+			var r = new RegExp(rex, modifiers);
+			m = r.test(m);
 
-				if (!m) {
-					validateStatus = false;
-				}
+			if (!m) {
+				state.valid = false;
 			}
-		})
-		.on('compare.validate', 'select, input, textarea', function(event, operator, target){
-			var t = (target[0] == '#' ? $.trim($(target).val()) : target),
-				v = $.trim($(this).val()),
-				tn = t*1,
-				vn = v*1;
+		}
+	})
+	.on('compare.validate', 'select, input, textarea', function(event, state, ops){
+		var operator = ops[0];
+		var target = ops[1];
+		var t = (target[0] == '#' ? $.trim($(target).val()) : target),
+			v = $.trim($(this).val()),
+			tn = t*1,
+			vn = v*1;
 
-			if (!v) return;
+		if (!v) return;
 
-			if (!isNaN(tn) && !isNaN(vn)) {
-				t = tn;
-				v = vn;
-			}
+		if (!isNaN(tn) && !isNaN(vn)) {
+			t = tn;
+			v = vn;
+		}
 
-			if (isNaN(vn) && !isNaN(tn)) {
-				v = v.length;
-			}
+		// TODO: this is wrong if field value is numeric, but we need to check text length anyway.
+		if (isNaN(vn) && !isNaN(tn)) {
+			v = v.length;
+		}
 
-			switch (operator) {
+		switch (operator) {
+			case 'eq':
+				state.valid = (v == t);
+				break;
+			case 'neq':
+				state.valid = (v != t);
+				break;
+			case 'lt':
+				state.valid = (v < t);
+				break;
+			case 'lte':
+				state.valid = (v <= t);
+				break;
+			case 'gt':
+				state.valid = (v > t);
+				break;
+			case 'gte':
+				state.valid = (v >= t);
+				break;
+			default:
+				state.valid = true;
+				break;
+		}
+	})
+	/* CUSTOM: mark valid or invalid */
+	.on('valid.validate', 'select, input, textarea', function(){
+		$(this).removeClass('invalid').addClass('valid');
+		return true;
+	})
+	.on('invalid.validate', 'select, input, textarea', function(event, index, operator){
+		var node = $(this);
+
+		// Prevent double notifications.
+		if (node.hasClass('invalid')) return true;
+
+		node.removeClass('valid').addClass('invalid');
+
+		var t = node.attr('data-validate-error-text');
+		if (!t) t = 'Value is invalid.';
+
+		try {
+			if (noty) noty({type: 'error', text: t, closeWith: ['click', 'button'], timeout: 3000});
+		}
+		catch(e){}
+
+		return true;
+	})
+	/* CUSTOM: Validate value */
+	.on('validate.validate', 'select, input, textarea', function(event, mode){
+		var node = $(this),
+			validate = (mode ? node.attr('data-validate-'+mode) : node.attr('data-validate'));
+
+		if (!validate) validate = node.attr('data-validate');
+		if (!validate) return true;
+
+		validate = validate.replace(/\s+/, ' ').split(' ');
+		if (validate.length < 1) return true;
+
+		var validationState = {
+			mode: mode,
+			valid: true
+		};
+
+		for (var i = 0; i < validate.length; i++) {
+			var ops = validate[i].split(':');
+			if (!ops || ops.length < 1) continue;
+
+			switch (ops[0]) {
 				case 'eq':
-					validateStatus = (v == t);
-					break;
 				case 'neq':
-					validateStatus = (v != t);
-					break;
 				case 'lt':
-					validateStatus = (v < t);
-					break;
 				case 'lte':
-					validateStatus = (v <= t);
-					break;
 				case 'gt':
-					validateStatus = (v > t);
-					break;
 				case 'gte':
-					validateStatus = (v >= t);
+					node.trigger('compare', [validationState, ops]);
 					break;
 				default:
-					validateStatus = true;
+					node.trigger(ops[0], [validationState, ops]);
 					break;
 			}
-		})
-		/* CUSTOM: mark valid or invalid */
-		.on('valid.validate', 'select, input, textarea', function(){
-			$(this).removeClass('invalid').addClass('valid');
-			return true;
-		})
-		.on('invalid.validate', 'select, input, textarea', function(event, index, operator){
-			// Set global status to false, so if we're triggered by custom rule, validate.validate will stop validation process on this field.
-			validateStatus = false;
 
-			var node = $(this);
-
-			// Prevent double notifications.
-			if (node.hasClass('invalid')) return true;
-
-			node.removeClass('valid').addClass('invalid');
-
-			var t = node.attr('data-validate-error-text');
-			if (!t) t = 'Value is invalid.';
-
-			try {
-				if (noty) noty({type: 'error', text: t, closeWith: ['click', 'button'], timeout: 3000});
+			if (!validationState.valid) {
+				ops.unshift(i);
+				node.trigger('invalid', ops);
+				return true;
 			}
-			catch(e){}
-
-			return true;
-		})
-		/* CUSTOM: Validate value */
-		.on('validate.validate', 'select, input, textarea', function(event, state){
-			validateStatus = true;
-
-			var node = $(this),
-				validate = (state ? node.attr('data-validate-'+state) : node.attr('data-validate'));
-			if (!validate) validate = node.attr('data-validate');
-			if (!validate) return true;
-
-			validate = validate.replace(/\s+/, ' ').split(' ');
-			if (validate.length < 1) return true;
-
-			for (var i = 0; i < validate.length; i++) {
-				var ops = validate[i].split(':');
-				if (!ops || ops.length < 1) continue;
-
-				switch (ops[0]) {
-					case 'eq':
-					case 'neq':
-					case 'lt':
-					case 'lte':
-					case 'gt':
-					case 'gte':
-						node.trigger('compare', ops);
-						break;
-					default:
-						node.trigger(ops[0], ops);
-						break;
-				}
-
-				if (!validateStatus) {
-					ops.unshift(i);
-					node.trigger('invalid', ops);
-					return true;
-				}
-			}
-
-			node.trigger('valid');
-			return true;
-		})
-		/* CHANGE and SUBMIT: trigger validation */
-		.on('change.validate', 'select, input, textarea', function(){
-			$(this).trigger('validate', ['change']);
-			$(this).parents('form').addClass('changed');
-		})
-		.on('submit.validate', 'form', function(event){
-			var fields = $('select,input,textarea', $(this));
-
-			fields.trigger('validate', ['submit']);
-
-			if (fields.filter('.invalid').length > 0) return false;
-			else $(this).removeClass('changed');
-		})
-	;
-
-	$(window).on('beforeunload.validate', function(){
-		var changed = $('form.changed[data-validate="submitted"]');
-		if (changed.length > 0) {
-			var txt = '',
-				dtxt = '';
-			changed.each(function(){
-				var t = $(this).attr('data-validate-error-text');
-				if (t) txt += t + "\n";
-				else dtxt = "Any data changed forms may not have been saved.\n";
-			});
-			if (txt || dtxt) return dtxt + txt;
 		}
-	});
 
+		node.trigger('valid');
+		return true;
+	})
+	/* CHANGE and SUBMIT: trigger validation */
+	.on('change.validate', 'select, input, textarea', function(){
+		$(this).trigger('validate', ['change']);
+		$(this).parents('form').addClass('changed');
+	})
+	.on('submit.validate', 'form', function(event){
+		var fields = $('select,input,textarea', $(this));
+
+		fields.trigger('validate', ['submit']);
+
+		if (fields.filter('.invalid').length > 0) return false;
+		else $(this).removeClass('changed');
+	})
+;
+
+$(window).on('beforeunload.validate', function(){
+	var changed = $('form.changed[data-validate="submitted"]');
+	if (changed.length > 0) {
+		var txt = '',
+			dtxt = '';
+		changed.each(function(){
+			var t = $(this).attr('data-validate-error-text');
+			if (t) txt += t + "\n";
+			else dtxt = "Any data changed in the forms may be lost if it was not submitted.\n";
+		});
+		if (txt || dtxt) return dtxt + txt;
+	}
 });
+
 
 })(jQuery);
