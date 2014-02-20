@@ -81,6 +81,10 @@
 	Use "data-validate-error-text" attribute to specify warning message, which will be shown in the confirmation dialog.
 
 
+	Fields will not be validated if they are `disabled`, if the form has `novalidate` attribute set or, in case of onsubmit validation,
+	if submit button has `formnovalidate` attribute set. More information can be found at:
+	https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#attr-formnovalidate
+
 
 	## LICENCE
 
@@ -237,8 +241,17 @@ $(document)
 	})
 	/* CUSTOM: Validate value */
 	.on('validate.validate', 'select, input, textarea', function(event, mode){
-		var node = $(this),
-			validate = (mode ? node.attr('data-validate-'+mode) : node.attr('data-validate'));
+		var node = $(this);
+
+		// WARNING: This may not work on IE < 9 if the field is disabled only through it's parent's "disabled" attribute.
+		// Why it should work: https://developer.mozilla.org/en-US/docs/Web/CSS/:disabled
+		// Why it may not: https://github.com/jquery/sizzle/issues/174
+		if (node.is(':disabled')) {
+			node.removeClass('valid invalid');
+			return true;
+		}
+
+		var validate = (mode ? node.attr('data-validate-'+mode) : node.attr('data-validate'));
 
 		if (!validate) validate = node.attr('data-validate');
 		if (!validate) return true;
@@ -281,21 +294,28 @@ $(document)
 	})
 	/* CHANGE and SUBMIT: trigger validation */
 	.on('change.validate', 'select, input, textarea', function(){
-		$(this).trigger('validate', ['change']);
-		$(this).parents('form').addClass('changed');
+		var form = $(this).closest('form');
+		if (!form.is('[novalidate]')) {
+			$(this).trigger('validate', ['change']);
+			form.addClass('changed');
+		}
 	})
-	.on('submit.validate', 'form', function(event){
+	.on('submit.validate', 'form:not([novalidate])', function(event){
+		if ($(document.activeElement).is('[formnovalidate]')) {
+			return;
+		}
+
 		var fields = $('select,input,textarea', $(this));
 
 		fields.trigger('validate', ['submit']);
 
-		if (fields.filter('.invalid').length > 0) return false;
+		if (fields.filter('.invalid:not(:disabled)').length > 0) return false;
 		else $(this).removeClass('changed');
 	})
 ;
 
 $(window).on('beforeunload.validate', function(){
-	var changed = $('form.changed[data-validate="submitted"]');
+	var changed = $('form.changed[data-validate="submitted"]:not([novalidate])');
 	if (changed.length > 0) {
 		var txt = '',
 			dtxt = '';
