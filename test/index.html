@@ -21,8 +21,23 @@ $(document).ready(function(){
 	;
 
 	$('#test').on('submit', function(e){
-		$('input, select, textarea', $(this)).trigger('validate', ['submit']);
 		e.preventDefault();
+	});
+
+	$('#submitWithoutValidation').on('click', function(){
+		$('#test .invalid, #test .valid').removeClass('valid invalid');
+	});
+
+	$('#toggleNovalidate').on('click', function(){
+		var form = $('#test');
+		var novalidate = form.attr('novalidate');
+		if (novalidate) {
+			form.removeAttr('novalidate');
+		}
+		else {
+			form.attr('novalidate', 'novalidate');
+		}
+		return false;
 	});
 });
 
@@ -41,6 +56,14 @@ $(document).ready(function(){
 			select,
 			textarea {
 				display: block;
+			}
+			form .novalidated,
+			form .validated {
+				display: none;
+			}
+			form[novalidate] .validated,
+			form:not([novalidate]) .novalidated {
+				display: inline;
 			}
 		</style>
 	</head>
@@ -113,7 +136,16 @@ $(document).ready(function(){
 			<input name="test-eq-custom" id="test-eq-custom" placeholder="42" data-validate="itMustBeMeaningOfLife"/>
 		</div>
 
-		<input type="submit" value="Test"/>
+		<div>
+			<label for="test-disabled">Disabled should not be validated</label>
+			<input name="test-disabled" id="test-disabled" value="i am disabled" data-validate="required number" disabled="disabled"/>
+		</div>
+
+		<input type="submit" id="submitWithValidation" value="Test"/>
+		<input type="submit" id="submitWithoutValidation" formnovalidate="formnovalidate" value="Test formnovalidate"/>
+
+		<button id="toggleNovalidate">Toggle novalidate on the FORM to:<span class="validated">false</span><span class="novalidated">true</span></button>
+
 
 		</form>
 	</body>

@@ -301,11 +301,12 @@ $(document)
 		}
 	})
 	.on('submit.validate', 'form:not([novalidate])', function(event){
+		var fields = $('select,input,textarea', $(this));
+
 		if ($(document.activeElement).is('[formnovalidate]')) {
+			fields.removeClass('valid invalid');
 			return;
 		}
-
-		var fields = $('select,input,textarea', $(this));
 
 		fields.trigger('validate', ['submit']);
 
