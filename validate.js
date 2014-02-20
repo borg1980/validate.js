@@ -296,9 +296,11 @@ $(document)
 	.on('change.validate', 'select, input, textarea', function(){
 		var form = $(this).closest('form');
 		if (!form.is('[novalidate]')) {
-			$(this).trigger('validate', ['change']);
-			form.addClass('changed');
+			return;
 		}
+
+		$(this).trigger('validate', ['change']);
+		form.addClass('changed');
 	})
 	.on('submit.validate', 'form:not([novalidate])', function(event){
 		var fields = $('select,input,textarea', $(this));
