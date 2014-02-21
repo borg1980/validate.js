@@ -295,7 +295,7 @@ $(document)
 	/* CHANGE and SUBMIT: trigger validation */
 	.on('change.validate', 'select, input, textarea', function(){
 		var form = $(this).closest('form');
-		if (!form.is('[novalidate]')) {
+		if (form.is('[novalidate]')) {
 			return;
 		}
 
