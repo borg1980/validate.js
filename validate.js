@@ -318,7 +318,7 @@ $(document)
 ;
 
 $(window).on('beforeunload.validate', function(){
-	var changed = $('form.changed[data-validate="submitted"]:not([novalidate])');
+	var changed = $('form.changed[data-validate~="submitted"]:not([novalidate])');
 	if (changed.length > 0) {
 		var txt = '',
 			dtxt = '';

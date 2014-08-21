@@ -39,6 +39,18 @@ $(document).ready(function(){
 		}
 		return false;
 	});
+
+	$('#toggleBeforeUnload').on('click', function(){
+		var form = $('#test');
+		var validate = form.attr('data-validate') || '';
+		if (validate && validate.match(/(^|\s)submitted(\s|$)/i)) {
+			form.attr('data-validate', validate.replace(/(^|\s)submitted(\s|$)/i, '$1'));
+		}
+		else {
+			form.attr('data-validate', 'submitted '+validate);
+		}
+		return false;
+	});
 });
 
 		</script>
@@ -58,10 +70,13 @@ $(document).ready(function(){
 				display: block;
 			}
 			form .novalidated,
-			form .validated {
+			form .validated,
+			form .submitted,
+			form[data-validate~='submitted'] .nosubmitted {
 				display: none;
 			}
 			form[novalidate] .validated,
+			form[data-validate~='submitted'] .submitted,
 			form:not([novalidate]) .novalidated {
 				display: inline;
 			}
@@ -145,6 +160,7 @@ $(document).ready(function(){
 		<input type="submit" id="submitWithoutValidation" formnovalidate="formnovalidate" value="Test formnovalidate"/>
 
 		<button id="toggleNovalidate">Toggle novalidate on the FORM to:<span class="validated">false</span><span class="novalidated">true</span></button>
+		<button id="toggleBeforeUnload">Toggle validation on page unload on the FORM to:<span class="submitted">false</span><span class="nosubmitted">true</span></button>
 
 
 		</form>
