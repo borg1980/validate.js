@@ -32,8 +32,13 @@
 		state.valid = $(this).val() == 'whatever';
 	})
 	```
+	and then specifying it in "data-validate" attribute, e.g.,
 
-	Valiation handler gets two arguments: state object and ops array. State object looks like this:
+	```
+	<input type="text" name="test" data-validate="customValidation1" />
+	```
+
+	Validation handler gets two arguments: state object and ops array. State object looks like this:
 
 	```
 	state = {
