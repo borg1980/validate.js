@@ -246,7 +246,8 @@ $(document)
 		// WARNING: This may not work on IE < 9 if the field is disabled only through it's parent's "disabled" attribute.
 		// Why it should work: https://developer.mozilla.org/en-US/docs/Web/CSS/:disabled
 		// Why it may not: https://github.com/jquery/sizzle/issues/174
-		if (node.is(':disabled')) {
+		// Include workaround: https://github.com/jquery/sizzle/pull/244/files#diff-97c8c06db741b10ac298cc03c28714a8R1322
+		if (node.is(':disabled') || this.isDisabled === true || false) {
 			node.removeClass('valid invalid');
 			return true;
 		}
