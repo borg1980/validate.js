@@ -1,6 +1,7 @@
 <html>
 	<head>
 		<title>Test validation rules</title>
+		<link rel="stylesheet" href="mocha.css" />
 		<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 		<script type="text/javascript" src="../validate.js"></script>
 		<script type="text/javascript">
@@ -49,6 +50,22 @@ $(document).ready(function(){
 		else {
 			form.attr('data-validate', 'submitted '+validate);
 		}
+		return false;
+	});
+
+	var mochaIsRunning = false;
+	$('#runMocha').on('click', function(){
+		if (mochaIsRunning) {
+			return;
+		}
+
+		var button = $(this).attr('disabled', 'disabled');
+
+		runMochaTests(function(){
+			mochaIsRunning = false;
+			button.removeAttr('disabled');
+		});
+
 		return false;
 	});
 });
@@ -162,7 +179,13 @@ $(document).ready(function(){
 		<button id="toggleNovalidate">Toggle novalidate on the FORM to:<span class="validated">false</span><span class="novalidated">true</span></button>
 		<button id="toggleBeforeUnload">Toggle validation on page unload on the FORM to:<span class="submitted">false</span><span class="nosubmitted">true</span></button>
 
+		<button id="runMocha">Run Mocha test suite</button>
 
 		</form>
+
+		<div id="mocha"></div>
+		<script type="text/javascript" src="mocha.js"></script>
+		<script>mocha.setup('bdd')</script>
+		<script type="text/javascript" src="index.js"></script>
 	</body>
 </html>
