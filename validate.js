@@ -28,7 +28,7 @@
 	You can implement custom validation rules simply by attaching custom event handlers to the fields, e.g.,
 
 	```
-	$(document).on('customValidation1.myValidations', function(event, state, ops){
+	$(document).on('customValidation1.myValidations', 'select, input, textarea', function(event, state, ops){
 		state.valid = $(this).val() == 'whatever';
 	})
 	```
@@ -154,7 +154,7 @@ $(document)
 		state.valid = true;
 
 		if (m) {
-			m = (ops[1] == 'integer' ? m.match(/^[\-+]?\d+$/) : m.match(/^[\-+]?\d+([.,]\d+)?$/));
+			m = (ops[1] == 'integer' ? m.match(/^[\-+]?\d+(e\d+)?$/) : m.match(/^[\-+]?\d+([.,e]\d+)?$/));
 
 			if (!m) {
 				state.valid = false;
